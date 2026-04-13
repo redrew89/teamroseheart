@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Josefin+Sans:wght@100;200&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Princess+Sofia&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --fade-height: 18vh;
+  --bg: #0c0b0c;
+  --text: #ff0000;
+  --accent: #b40000;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* ── Header ── */
+header {
+  text-align: center;
+  padding: 72px 24px 48px;
+  letter-spacing: 0.35em;
+  text-transform: capitalize;
+  font-size: 20px;
+  opacity: 0.9;
+}
+
+header h1 {
+  font-family: 'Princess Sofia', serif;
+  font-size: clamp(32px, 5vw, 52px);
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+/* ── Main column ── */
+.strip {
+  width: min(900px, 92vw);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+  padding-bottom: 120px;
+}
+
+/* ── Slide ── */
+.slide {
+  position: relative;
+}
+
+/* ── Image frame ── */
+.frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.frame img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  filter: brightness(0.82) saturate(0.9);
+  transition: transform 0.7s ease, filter 0.7s ease;
+}
+
+.slide:hover img {
+  transform: scale(1.03);
+  filter: brightness(0.95) saturate(1.05);
+}
+
+.slide {
+  text-decoration: none;
+  color: inherit;
+}
+
+.slide:visited {
+  color: inherit;
+}
+
+/* ── Caption (now tied to image, not full page) ── */
+.caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 28px;
+  background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  opacity: 1;
+}
+
+.title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 2.5vw, 28px);
+}
+
+.arrow {
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+/* ── Hover accent ── */
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-left: 2px solid var(--accent);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.4s ease;
+  z-index: 5;
+}
+
+.slide:hover .frame::before {
+  transform: scaleY(0.6);
+}
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 60px 24px 40px;
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  opacity: 0.25;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Team Roseheart</h1>
+  <span>Lead by Andrew John Rosehart <br>🌹💖</span>
+
+</header>
+
+<main class="strip">
+
+  <a class="slide" href="https://www.nexusmods.com/skyrimspecialedition/mods/26983" target="_blank" rel="noopener noreferrer">
+    <div class="frame">
+      <img src="./imgp/rotntitle.png">
+      <div class="caption">
+        <span class="label">For Skyrim (SE/AE)</span>
+        <span class="title">Lielle - Rose of the North</span>
+        <span class="arrow">At Nexus Mods →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="slide" href="https://archiveofourown.org/series/5615716" target="_blank" rel="noopener noreferrer">
+    <div class="frame">
+      <img src="./imgp/talestitle.png">
+      <div class="caption">
+        <span class="label">Archive of Our Own</span>
+        <span class="title">Rose of the North Tales</span>
+        <span class="arrow">Read →</span>
+      </div>
+    </div>
+  </a>
+
+  <a class="slide" href="#">
+    <div class="frame">
+      <img src="./imgp/ARBWTitleDraft.png">
+      <div class="caption">
+        <span class="label">For Fallout 4</span>
+        <span class="title">A Rose Between Worlds</span>
+        <span class="arrow">To Be Released </span>
+      </div>
+    </div>
+  </a>
+
+  <a class="slide" href="#" target="_blank" rel="noopener noreferrer">
+    <div class="frame">
+      <img src="./imgp/roseofthehearttitle.png">
+      <div class="caption">
+        <span class="label">Autofictional Memoir</span>
+        <span class="title">A Rose of the Heart</span>
+        <span class="arrow">To Be Revealed</span>
+      </div>
+    </div>
+  </a>
+
+
+</main>
+
+<footer>All images linked independently · Hover to reveal</footer>
+
+</body>
+</html>
