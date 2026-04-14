@@ -47,13 +47,22 @@ header h1 {
 
 /* ── Main column ── */
 .strip {
-  width: min(900px, 92vw);
+  width: min(600px, 92vw);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+
   gap: 30px;
   padding-bottom: 120px;
 }
+
+/* Responsive layout - makes a one column layout instead of a two-column layout */
+@media (max-width: 800px) {
+.strip {
+    width: min(300px, 92vw);
+  }
+}
+
 
 /* ── Slide ── */
 .slide {
@@ -146,6 +155,7 @@ footer {
   text-transform: uppercase;
   opacity: 1;
 }
+
 </style>
 </head>
 
@@ -153,7 +163,10 @@ footer {
 
 <header>
   <h1>Team Roseheart  </h1>
-  <span><img src="./imgp/graphics/RoseThorn.png" width="300"> </span> <br>
+
+  <a class="image" style="display: block;" href="">
+   <img src="./imgp/graphics/RoseThorn.png" width="308" style="display: block; margin: 0 auto;">
+  </a>
   <span>Led by Andrew John Rosehart <br> 
 <br> <a href="https://youtube.com/@TeamRoseheartGG" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/graphics/yt.png" width=32 height=32> </a> 
 &nbsp; <a href="https://nexusmods.com/profile/redrew89" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/graphics/nexus.png" width=32 height=32> </a > &nbsp; <a href="https://discord.gg/j7RSpfDHv7" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/graphics/discord.png" width=32 height=32> </a>
