@@ -29,7 +29,7 @@ body {
 /* ── Header ── */
 header {
   text-align: center;
-  padding: 72px 24px 48px;
+  padding: 48px 48px 48px;
   letter-spacing: 0.35em;
   text-transform: capitalize;
   font-size: 20px;
@@ -70,6 +70,15 @@ header h1 {
   }
 }
 
+.icon-row {
+  width: min(300px, 72vw);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  padding-bottom: 10px;
+}
+
 
 /* ── Slide ── */
 .slide {
@@ -87,7 +96,7 @@ header h1 {
   width: 100%;
   display: block;
   object-fit: cover;
-  filter: brightness(0.82) saturate(0.9);
+  filter: brightness(0.7) saturate(0.7);
   transition: transform 0.7s ease, filter 0.7s ease;
 }
 
@@ -156,7 +165,7 @@ header h1 {
 /* ── Footer ── */
 footer {
   text-align: center;
-  padding: 60px 24px 40px;
+  padding: 60px 48px 40px;
   font-size: 9px;
   letter-spacing: 0.35em;
   text-transform: uppercase;
@@ -171,16 +180,22 @@ footer {
 
 <header>
   <h1>Team Roseheart  </h1>
-  <span>Led by Andrew John Rosehart <br> 
-<br> <a href="https://youtube.com/@TeamRoseheartGG" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/graphics/yt.png" width=32 height=32> </a> 
-&nbsp; <a href="https://nexusmods.com/profile/redrew89" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/graphics/nexus.png" width=32 height=32> </a > &nbsp; <a href="https://discord.gg/j7RSpfDHv7" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/graphics/discord.png" width=32 height=32> </a>
+  <span>Led by Andrew John Rosehart <br> Creating online as ReDrew89 
+  <br><br>
+Content and Community
+<br> 
+<a class="icon-row">
+<a href="https://youtube.com/@TeamRoseheartGG" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/graphics/yt.png" width=48> </a>  <a href="https://discord.gg/j7RSpfDHv7" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/graphics/discord.png" width=48> </a>
+<a href="https://nexusmods.com/profile/redrew89" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/graphics/nexus.png" width=48> </a ><br>
+Meet the Team<br>
+  <a class="icon-row">
+  <a href="https://www.twitch.tv/radicalrumin" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/faces/rumin.png" width="100px" style="border-radius: 48px;"></a> 
+  <a href="https://www.patreon.com/cw/teamroseheart" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/faces/drew.jpg" width="100px" style="border-radius: 48px;"> </a> 
+  <a href="https://www.patreon.com/cw/jojorawr" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/faces/jojo.png" width="100px" style="border-radius: 48px;"></a> 
+  <a href="https://x.com/MilicaVO/" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/faces/milicavo.jpg" width="100px" style="border-radius: 48px;"></a><br>
+    </a>
 
-<br><br>Meet the Team<br><br>
-
-  <a href="https://www.twitch.tv/radicalrumin" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/faces/rumin.png" width="50px" style="border-radius: 24px;"></a> &nbsp; &nbsp;
-  <a href="https://www.patreon.com/cw/teamroseheart" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/faces/drew.jpg" width="50px" style="border-radius: 24px;"> </a> &nbsp; &nbsp;
-  <a href="https://www.patreon.com/cw/jojorawr" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/faces/jojo.png" width="50px" style="border-radius: 24px;"></a> &nbsp; &nbsp;
-  <a href="https://x.com/MilicaVO/" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> <img src="./imgp/faces/milicavo.jpg" width="50px" style="border-radius: 24px;"></a>
+</a >
 </span>     
 
 </header>
@@ -204,9 +219,9 @@ footer {
     <div class="frame">
       <img src="./imgp/talestitle.png">
       <div class="caption">
-        <span class="label">Archive of Our Own</span>
+        <span class="label">Expanded Works</span>
         <span class="title">Rose of the North Tales</span>
-        <span class="arrow">Read →</span>
+        <span class="arrow">Read at Archive of Our Own →</span>
       </div>
     </div>
   </a>
@@ -222,7 +237,7 @@ footer {
     </div>
   </a>
 
-  <a class="slide" href="#" target="_blank" rel="noopener noreferrer">
+  <a class="slide"  target="_blank" rel="noopener noreferrer">
     <div class="frame">
       <img src="./imgp/roseofthehearttitle.png">
       <div class="caption">
@@ -233,7 +248,7 @@ footer {
     </div>
   </a>
 
-  <a class="slide" href="#" target="_blank" rel="noopener noreferrer">
+  <a class="slide" target="_blank" rel="noopener noreferrer">
     <div class="frame">
       <img src="./imgp/RosehartCompendium.png">
       <div class="caption">
@@ -244,9 +259,6 @@ footer {
     </div>
   </a>
 
-  <a class="image" style="display: block;" href="">
-    <img src="./imgp/qr-code.png" width=300 style="display: block; margin: 0 auto;">
-  </a>
   
   
 </main>
@@ -254,7 +266,7 @@ footer {
 <footer> "Lielle Grace Rosehart", “Rose of the North”,  “A Rose Between Worlds”,  "A Rose of the Heart", and "The Rosehart Compendium" <br>
 Copyright &copy; Andrew G. Hanson (writing as Andrew John Rosehart), Team Roseheart Gaming. All rights reserved. <br> 
 Page Font "Princess Sofia" Copyright © 2011, Font Diner (www.fontdiner.com), with Reserved Font Name "Princess Sofia".<br>
-Page constucted with assistance from <a href="http://claude.ai" target="_blank" rel="noopener noreferrer" style="text-decoration: none"> Claude.ai </a>
+Page partially constucted with Claude.ai </a>
 </foote0r>
 
 </body>
