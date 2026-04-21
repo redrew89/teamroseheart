@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Team Roseheart · Live Stream</title>
+    <link rel="icon" type="image/x-icon" href="./imgp/graphics/RoseThorn.ico">
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Josefin+Sans:wght@100;200&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Princess+Sofia&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── Roseheart base styles (pruned & adapted) ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --fade-height: 18vh;
+            --bg: #1a1a1a;
+            --text: #b8b8b8;
+            --accent: #ff0000;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Cormorant Garamond', serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Compact Header (adapted) ── */
+        .stream-header {
+            text-align: center;
+            padding: 12px 24px 8px;
+            letter-spacing: 0.25em;
+            text-transform: capitalize;
+            font-size: 14px;
+            opacity: 0.9;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .stream-header h1 {
+            font-family: 'Princess Sofia', serif;
+            font-size: clamp(28px, 4vw, 42px);
+            color: var(--accent);
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .stream-header span {
+            font-size: 12px;
+            letter-spacing: 0.2em;
+        }
+
+        /* ── Main stream area (flex row) ── */
+        .stream-main {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            padding: 12px;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        /* ── Stream panel ── */
+        .stream-panel {
+            flex: 1 1 70%;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 1px solid #2a2a2a;
+        }
+
+        .stream-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ── Chat panel ── */
+        .chat-panel {
+            flex: 0 0 30%;
+            min-width: 280px;
+            max-width: 40%;
+            display: flex;
+            flex-direction: column;
+            background: #0f0f0f;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 1px solid #2a2a2a;
+            position: relative;
+        }
+
+        /* Chat tools — styled to match roseheart elegance */
+        .chat-tools {
+            background: #181818;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.15);
+            color: #ccc;
+            flex-shrink: 0;
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .tool-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-family: 'Josefin Sans', sans-serif;
+            letter-spacing: 0.1em;
+        }
+
+        .tool-btn:hover {
+            background: #2a2a2a;
+            color: var(--accent);
+        }
+
+        .chat-wrap {
+            flex: 1;
+            background: #050505;
+            overflow: hidden;
+        }
+
+        .chat-wrap iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Resize handle with rose accent */
+        .chat-resize-bar {
+            width: 6px;
+            background: #2a2a2a;
+            cursor: ew-resize;
+            position: absolute;
+            left: -3px;
+            top: 0;
+            bottom: 0;
+            z-index: 10;
+            opacity: 0.5;
+            transition: opacity 0.2s, background 0.2s;
+        }
+
+        .chat-resize-bar:hover {
+            opacity: 1;
+            background: var(--accent);
+        }
+
+        /* Live indicator */
+        .live-badge {
+            margin-left: auto;
+            background: var(--accent);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Josefin Sans', sans-serif;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .flex-spacer { flex: 1; }
+
+        /* ── Compact Footer (adapted) ── */
+        .stream-footer {
+            text-align: center;
+            padding: 8px 24px 6px;
+            font-size: 8px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 0, 0, 0.15);
+            flex-shrink: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .stream-main { flex-direction: column; }
+            .chat-panel { 
+                max-width: 100%; 
+                min-width: unset;
+                height: 35vh;
+            }
+            .stream-header { padding: 8px 16px 4px; }
+        }
+
+        /* Hide when collapsed */
+        .chat-collapsed .chat-panel { display: none; }
+        .chat-collapsed .stream-panel { flex-basis: 100%; }
+    </style>
+</head>
+<body>
+
+<!-- Roseheart Styled Header -->
+<header class="stream-header">
+    <h1>Team Roseheart</h1>
+    <span>Led by Andrew John Rosehart · Creating online as ReDrew89</span>
+</header>
+
+<!-- Main Stream + Chat Layout -->
+<main class="stream-main" id="streamMain">
+    <!-- Stream Panel -->
+    <div class="stream-panel" id="streamPanel">
+        <iframe id="streamFrame" 
+                class="stream-frame"
+                src="https://www.youtube.com/embed/live_stream?channel=UCcWkShE9dqAw8uM1RJC99fQ&autoplay=1&mute=0&modestbranding=1&rel=0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+        </iframe>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-resize-bar" id="resizeBar" title="Drag to resize chat"></div>
+        
+        <div class="chat-tools">
+            <div class="tool-group">
+                <button class="tool-btn" id="btnRefresh" title="Refresh stream"><i class="fas fa-sync-alt"></i></button>
+                <button class="tool-btn" id="btnPopout" title="Popout chat"><i class="fas fa-external-link-alt"></i></button>
+                <button class="tool-btn" id="btnToggleChat" title="Toggle chat panel"><i class="fas fa-chevron-right"></i></button>
+                <button class="tool-btn" id="btnSwapSides" title="Swap sides"><i class="fas fa-arrows-alt-h"></i></button>
+            </div>
+            <div class="flex-spacer"></div>
+            <div class="live-badge" id="liveBadge">
+                <i class="fas fa-circle" style="font-size: 0.6rem;"></i> 
+                <span id="liveStatusText">LIVE</span>
+            </div>
+        </div>
+
+        <div class="chat-wrap">
+            <iframe id="chatFrame"
+                    src="https://www.youtube.com/live_chat?v=dQw4w9WgXcQ&embed_domain=localhost"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+</main>
+
+<!-- Roseheart Styled Footer -->
+<footer class="stream-footer">
+    "Lielle Grace Rosehart", “Rose of the North”, “A Rose Between Worlds”, "A Rose of the Heart", and "The Rosehart Compendium" <br>
+    Copyright © Andrew G. Hanson (writing as Andrew John Rosehart), Team Roseheart Gaming. All rights reserved. <br> 
+    Page Font "Princess Sofia" Copyright © 2011, Font Diner (www.fontdiner.com), with Reserved Font Name "Princess Sofia".
+</footer>
+
+<script>
+    (function(){
+        "use strict";
+
+        // ── Configuration ──
+        const CONFIG = {
+            youtubeChannelId: 'UCSTsZCHEEus5W4-18U7Haww',
+            youtubeVideoId: '',           // set for specific video/chat
+            chatEmbedUrl: '/chat/static/index.html',
+            useYoutubeChat: true,
+        };
+
+        // DOM elements
+        const streamFrame = document.getElementById('streamFrame');
+        const chatFrame = document.getElementById('chatFrame');
+        const chatPanel = document.getElementById('chatPanel');
+        const resizeBar = document.getElementById('resizeBar');
+        const streamMain = document.getElementById('streamMain');
+        const liveStatusText = document.getElementById('liveStatusText');
+        const liveBadge = document.getElementById('liveBadge');
+
+        // Buttons
+        const btnRefresh = document.getElementById('btnRefresh');
+        const btnPopout = document.getElementById('btnPopout');
+        const btnToggle = document.getElementById('btnToggleChat');
+        const btnSwap = document.getElementById('btnSwapSides');
+
+        // ── URL builders ──
+        function buildStreamUrl() {
+            if (CONFIG.youtubeVideoId) {
+                return `https://www.youtube.com/embed/${CONFIG.youtubeVideoId}?autoplay=1&modestbranding=1&rel=0`;
+            }
+            return `https://www.youtube.com/embed/live_stream?channel=${CONFIG.youtubeChannelId}&autoplay=1&mute=0&modestbranding=1&rel=0`;
+        }
+
+        function buildChatUrl() {
+            if (CONFIG.useYoutubeChat) {
+                const vid = CONFIG.youtubeVideoId || 'dQw4w9WgXcQ';
+                return `https://www.youtube.com/live_chat?v=${vid}&embed_domain=${window.location.hostname}`;
+            }
+            return CONFIG.chatEmbedUrl;
+        }
+
+        function refreshStream() { streamFrame.src = buildStreamUrl(); }
+        function refreshChat() { chatFrame.src = buildChatUrl(); }
+
+        // Initialize
+        streamFrame.src = buildStreamUrl();
+        chatFrame.src = buildChatUrl();
+
+        // ── Resize functionality ──
+        let isResizing = false;
+        let startX, startWidth;
+
+        function onMouseMove(e) {
+            if (!isResizing) return;
+            const dx = e.clientX - startX;
+            const containerRect = streamMain.getBoundingClientRect();
+            let newWidth = startWidth - dx;
+            
+            const minW = 240;
+            const maxW = containerRect.width * 0.4;
+            newWidth = Math.min(Math.max(newWidth, minW), maxW);
+            
+            chatPanel.style.flex = `0 0 ${newWidth}px`;
+            document.body.style.userSelect = 'none';
+        }
+
+        function onMouseUp() {
+            if (isResizing) {
+                isResizing = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                document.body.style.userSelect = '';
+            }
+        }
+
+        resizeBar.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isResizing = true;
+            startX = e.clientX;
+            startWidth = chatPanel.getBoundingClientRect().width;
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+
+        // ── Toolbar actions ──
+        btnRefresh.addEventListener('click', () => {
+            refreshStream();
+            if (CONFIG.useYoutubeChat) refreshChat();
+        });
+
+        btnPopout.addEventListener('click', () => {
+            window.open(chatFrame.src, '_blank', 'width=400,height=700');
+        });
+
+        // Toggle chat
+        let chatVisible = true;
+        let lastFlexBasis = '30%';
+        btnToggle.addEventListener('click', () => {
+            if (chatVisible) {
+                lastFlexBasis = chatPanel.style.flex || getComputedStyle(chatPanel).flexBasis;
+                chatPanel.style.display = 'none';
+                btnToggle.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            } else {
+                chatPanel.style.display = 'flex';
+                chatPanel.style.flex = `0 0 ${lastFlexBasis}`;
+                btnToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            }
+            chatVisible = !chatVisible;
+        });
+
+        // Swap sides
+        let swapped = false;
+        btnSwap.addEventListener('click', () => {
+            if (!swapped) {
+                streamMain.style.flexDirection = 'row-reverse';
+                resizeBar.style.left = 'auto';
+                resizeBar.style.right = '-3px';
+            } else {
+                streamMain.style.flexDirection = 'row';
+                resizeBar.style.right = 'auto';
+                resizeBar.style.left = '-3px';
+            }
+            swapped = !swapped;
+        });
+
+        // ── Live status ──
+        function updateLiveStatus(isLive = true, viewerCount = 0) {
+            if (isLive) {
+                liveStatusText.innerText = viewerCount > 0 ? `LIVE · ${viewerCount}` : 'LIVE';
+                liveBadge.style.background = 'var(--accent)';
+            } else {
+                liveStatusText.innerText = 'OFFLINE';
+                liveBadge.style.background = '#555';
+            }
+        }
+
+        // Example: simulate live
+        updateLiveStatus(true, 128);
+
+        // ── Expose for external updates ──
+        window.handleEmbedUpdate = function(data) {
+            if (data.embedStatus && data.embedStatus[0] === 'offline') {
+                updateLiveStatus(false);
+            } else {
+                updateLiveStatus(true, data.ribbonText || 0);
+            }
+        };
+
+        window.setVideoId = function(videoId) {
+            CONFIG.youtubeVideoId = videoId;
+            refreshStream();
+            if (CONFIG.useYoutubeChat) refreshChat();
+        };
+
+        window.StreamConfig = CONFIG;
+        console.log('🌹 Team Roseheart stream ready');
+    })();
+</script>
+
+</body>
+</html>
