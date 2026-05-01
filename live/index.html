@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Team Roseheart · Live Stream</title>
+    <link rel="icon" type="image/x-icon" href="./imgp/graphics/RoseThorn.ico">
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Josefin+Sans:wght@100;200&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Princess+Sofia&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── Roseheart base styles (pruned & adapted) ── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --fade-height: 18vh;
+            --bg: #1a1a1a;
+            --text: #b8b8b8;
+            --accent: #ff0000;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Cormorant Garamond', serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Compact Header (adapted) ── */
+        .stream-header {
+            text-align: center;
+            padding: 12px 24px 8px;
+            letter-spacing: 0.25em;
+            text-transform: capitalize;
+            font-size: 14px;
+            opacity: 0.9;
+            border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .stream-header h1 {
+            font-family: 'Princess Sofia', serif;
+            font-size: clamp(28px, 4vw, 42px);
+            color: var(--accent);
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .stream-header span {
+            font-size: 12px;
+            letter-spacing: 0.2em;
+        }
+
+        /* ── Main stream area (flex row) ── */
+        .stream-main {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            padding: 12px;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        /* ── Stream panel ── */
+        .stream-panel {
+            position: relative;
+            flex: 1 1 70%;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 1px solid #2a2a2a;
+        }
+
+        .stream-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ── Chat panel ── */
+
+        .tool-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .tool-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-family: 'Josefin Sans', sans-serif;
+            letter-spacing: 0.1em;
+        }
+
+        .tool-btn:hover {
+            background: #2a2a2a;
+            color: var(--accent);
+        }
+
+        .offline-poster {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #0b0b0b;
+            color: #f7f7f7;
+            text-align: center;
+            overflow: hidden;
+            z-index: 5;
+        }
+
+        .offline-poster.visible {
+            display: flex;
+        }
+
+        .offline-poster img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.92;
+        }
+
+        .offline-poster .offline-copy {
+            position: relative;
+            z-index: 2;
+            max-width: 85%;
+            padding: 20px 18px;
+            background: rgba(12, 12, 12, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            box-shadow: 0 18px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .offline-poster .offline-copy strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .offline-poster .offline-copy p {
+            margin: 0;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+
+        /* Live indicator */
+        .live-badge {
+            margin-left: auto;
+            background: var(--accent);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Josefin Sans', sans-serif;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .flex-spacer { flex: 1; }
+
+        /* ── Compact Footer (adapted) ── */
+        .stream-footer {
+            text-align: center;
+            padding: 8px 24px 6px;
+            font-size: 8px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 0, 0, 0.15);
+            flex-shrink: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .stream-main { flex-direction: column; }
+            .stream-header { padding: 8px 16px 4px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Roseheart Styled Header -->
+<header class="stream-header">
+    <h1>Team Roseheart</h1>
+    <span>Led by Andrew John Rosehart · Creating online as ReDrew89</span>
+</header>
+
+<!-- Main Stream + Chat Layout -->
+<main class="stream-main" id="streamMain">
+    <!-- Stream Panel -->
+    <div class="stream-panel" id="streamPanel">
+        <iframe id="streamFrame" 
+                class="stream-frame"
+                src="https://www.youtube.com/embed/live_stream?channel=UCcWkShE9dqAw8uM1RJC99fQ&autoplay=0&mute=0&modestbranding=1&rel=0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+        </iframe>
+
+        <div class="offline-poster" id="offlinePoster">
+            <img id="offlineImage" src="" alt="Stream offline image">
+            <div class="offline-copy">
+                <strong>Stream is offline</strong>
+                <p id="offlineText">We’re not live right now. Check back soon.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Roseheart Styled Footer -->
+<footer class="stream-footer">
+    "Lielle Grace Rosehart", “Rose of the North”, “A Rose Between Worlds”, "A Rose of the Heart", and "The Rosehart Compendium" <br>
+    Copyright © Andrew G. Hanson (writing as Andrew John Rosehart), Team Roseheart Gaming. All rights reserved. <br> 
+    Page Font "Princess Sofia" Copyright © 2011, Font Diner (www.fontdiner.com), with Reserved Font Name "Princess Sofia".
+</footer>
+
+<script>
+    (function(){
+        "use strict";
+
+        // ── Configuration ──
+        const CONFIG = {
+            youtubeChannelId: 'UCSTsZCHEEus5W4-18U7Haww', // Team Roseheart's YouTube channel ID
+            youtubeVideoId: '',           // optional: specific video ID to embed
+            youtubeApiKey: '',            // optional: YouTube Data API key for live status checks
+            autoLiveCheck: true,          // enable auto offline poster based on channel live status
+            offlineImageUrl: './imgp/Lielle Wallpaper 4k.jpg',
+            offlineImageAlt: 'redrew89 is offline',
+            offlineText: 'We’re not live right now. Check back soon.',
+        };
+
+        // DOM elements
+        const streamFrame = document.getElementById('streamFrame');
+        const offlinePoster = document.getElementById('offlinePoster');
+        const offlineImage = document.getElementById('offlineImage');
+        const offlineText = document.getElementById('offlineText');
+
+        // ── URL builders ──
+        function buildStreamUrl() {
+            if (CONFIG.youtubeVideoId) {
+                return `https://www.youtube.com/embed/${CONFIG.youtubeVideoId}?autoplay=1&modestbranding=1&rel=0`;
+            }
+            return `https://www.youtube.com/embed/live_stream?channel=${CONFIG.youtubeChannelId}&autoplay=1&mute=0&modestbranding=1&rel=0`;
+        }
+
+        function refreshStream() { 
+            streamFrame.src = buildStreamUrl(); 
+            showOfflinePoster(false);
+        }
+
+        function showOfflinePoster(show) {
+            if (!CONFIG.offlineImageUrl) {
+                offlinePoster.classList.remove('visible');
+                return;
+            }
+
+            if (show) {
+                offlineImage.src = CONFIG.offlineImageUrl;
+                offlineImage.alt = CONFIG.offlineImageAlt;
+                offlineText.textContent = CONFIG.offlineText;
+                streamFrame.style.display = 'none';
+                offlinePoster.classList.add('visible');
+            } else {
+                streamFrame.style.display = '';
+                offlinePoster.classList.remove('visible');
+            }
+        }
+
+        async function fetchLiveVideoId() {
+            if (!CONFIG.youtubeApiKey || !CONFIG.autoLiveCheck) {
+                return null;
+            }
+
+            const endpoint = 'https://www.googleapis.com/youtube/v3/search';
+            const params = new URLSearchParams({
+                part: 'snippet',
+                channelId: CONFIG.youtubeChannelId,
+                eventType: 'live',
+                type: 'video',
+                maxResults: '1',
+                key: CONFIG.youtubeApiKey,
+            });
+
+            try {
+                const response = await fetch(`${endpoint}?${params}`);
+                if (!response.ok) {
+                    console.warn('YouTube live status check failed:', response.status, response.statusText);
+                    return null;
+                }
+
+                const data = await response.json();
+                if (data.items && data.items.length > 0 && data.items[0].id && data.items[0].id.videoId) {
+                    return data.items[0].id.videoId;
+                }
+            } catch (error) {
+                console.warn('YouTube live status request error:', error);
+            }
+
+            return null;
+        }
+
+        async function refreshLiveStatus() {
+            if (!CONFIG.youtubeApiKey || !CONFIG.autoLiveCheck) {
+                return;
+            }
+
+            const liveVideoId = await fetchLiveVideoId();
+            if (liveVideoId) {
+                CONFIG.youtubeVideoId = liveVideoId;
+                refreshStream();
+                showOfflinePoster(false);
+            } else {
+                showOfflinePoster(true);
+            }
+        }
+
+        function initLiveStatus() {
+            refreshStream();
+            if (CONFIG.youtubeApiKey && CONFIG.autoLiveCheck) {
+                refreshLiveStatus();
+                setInterval(refreshLiveStatus, 60 * 1000);
+            }
+        }
+
+        // Initialize
+        initLiveStatus();
+
+        window.setLiveState = function(isLive) {
+            showOfflinePoster(!isLive);
+        };
+
+        window.setVideoId = function(videoId) {
+            CONFIG.youtubeVideoId = videoId;
+            refreshStream();
+        };
+
+        window.StreamConfig = CONFIG;
+        console.log('🌹 Team Roseheart stream ready');
+    })();
+</script>
+
+</body>
+</html>
