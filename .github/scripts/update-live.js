@@ -3,9 +3,8 @@ const path = require('path');
 const https = require('https');
 
 const ACTION = process.env.ACTION;
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const CHANNEL_ID = 'UCSTsZCHEEus5W4-18U7Haww';
-
-// No API key needed. No quota. Just works.
 
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
@@ -21,60 +20,35 @@ async function getRecentVideoIds() {
   const url = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
   console.log('Fetching RSS feed...');
   const xml = await fetchUrl(url);
-
-  // Pull out video IDs from <yt:videoId> tags
   const matches = [...xml.matchAll(/<yt:videoId>([^<]+)<\/yt:videoId>/g)];
   const ids = matches.map(m => m[1]);
   console.log(`Found ${ids.length} recent videos in feed.`);
   return ids;
 }
 
-async function isVideoLive(videoId) {
-  // oEmbed returns basic metadata with no API key required
-  const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
-  try {
-    const json = await fetchUrl(url);
-    const data = JSON.parse(json);
-    // If the title contains "live" or we just check via a second method below
-    // Primary: use the /live URL redirect trick — YouTube returns 200 for an active live stream
-    return await checkLiveRedirect(videoId);
-  } catch {
-    return false;
-  }
-}
+async function findLiveVideoId(videoIds) {
+  // Batch up to 5 IDs in one API call — liveStreamingDetails only populates for live/scheduled videos
+  const ids = videoIds.slice(0, 5).join(',');
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails,snippet&id=${ids}&key=${YOUTUBE_API_KEY}`;
 
-async function checkLiveRedirect(videoId) {
-  // YouTube's /live page for a video redirects and returns metadata we can inspect
-  // Simpler: check if the video is currently live via the nocookie embed page
-  const url = `https://www.youtube.com/watch?v=${videoId}`;
-  try {
-    const html = await fetchUrl(url);
-    // YouTube embeds "isLiveBroadcast" and liveBroadcastDetails in the page HTML
-    const isLive = html.includes('"isLiveContent":true') && html.includes('"isLiveBroadcast":true');
-    return isLive;
-  } catch {
-    return false;
-  }
-}
+  console.log(`Checking live status for ${videoIds.slice(0, 5).length} videos...`);
+  const json = await fetchUrl(url);
+  const data = JSON.parse(json);
 
-async function getLiveVideoId() {
-  const videoIds = await getRecentVideoIds();
-  if (!videoIds.length) {
-    console.log('No videos found in RSS feed.');
+  if (!data.items || !data.items.length) {
+    console.log('No video data returned from API.');
     return null;
   }
 
-  // Check the 5 most recent videos for a live stream
-  for (const videoId of videoIds.slice(0, 5)) {
-    console.log(`Checking if ${videoId} is live...`);
-    const live = await checkLiveRedirect(videoId);
-    if (live) {
-      console.log(`✅ Found live stream: ${videoId}`);
-      return videoId;
+  for (const item of data.items) {
+    const details = item.liveStreamingDetails;
+    // actualStartTime set + no actualEndTime = currently live
+    if (details && details.actualStartTime && !details.actualEndTime) {
+      console.log(`✅ Found live stream: ${item.id} ("${item.snippet.title}")`);
+      return item.id;
     }
   }
 
-  console.log('No live stream found among recent videos.');
   return null;
 }
 
@@ -88,20 +62,34 @@ function updateStreamJson(videoId) {
 async function main() {
   console.log(`Action: ${ACTION}`);
 
+  if (ACTION === 'go_offline') {
+    updateStreamJson('');
+    console.log('✅ Stream set to offline');
+    return;
+  }
+
+  if (!YOUTUBE_API_KEY) {
+    console.error('YOUTUBE_API_KEY not set in environment variables');
+    process.exit(1);
+  }
+
+  const videoIds = await getRecentVideoIds();
+  if (!videoIds.length) {
+    console.log('No videos found in RSS feed.');
+    return;
+  }
+
+  const liveId = await findLiveVideoId(videoIds);
+
   if (ACTION === 'go_live') {
-    const videoId = await getLiveVideoId();
-    if (videoId) {
-      updateStreamJson(videoId);
+    if (liveId) {
+      updateStreamJson(liveId);
       console.log('✅ Stream set to live');
     } else {
       console.log('❌ No live stream found');
     }
-  } else if (ACTION === 'go_offline') {
-    updateStreamJson('');
-    console.log('✅ Stream set to offline');
   } else if (ACTION === 'check') {
-    const videoId = await getLiveVideoId();
-    console.log(videoId ? `✅ Live video ID: ${videoId}` : '❌ No live stream');
+    console.log(liveId ? `✅ Live video ID: ${liveId}` : '❌ No live stream');
   } else {
     console.error(`Unknown action: ${ACTION}`);
     process.exit(1);
