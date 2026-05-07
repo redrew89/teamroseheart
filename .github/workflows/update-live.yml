@@ -1,7 +1,9 @@
 name: Update Live Stream
 
 on:
-  workflow_dispatch:  # Allows manual triggering
+  schedule:
+    - cron: '*/10 * * * *'   # auto-check every 10 minutes
+  workflow_dispatch:
     inputs:
       action:
         description: 'Action to perform'
@@ -16,32 +18,26 @@ on:
 jobs:
   update-stream:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install axios
+          node-version: '20'
 
       - name: Check or update live status
         run: node .github/scripts/update-live.js
         env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          ACTION: ${{ inputs.action }}
+          ACTION: ${{ inputs.action || 'check' }}
 
       - name: Commit changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git add live/stream.json
           if git commit -m "Update live stream status"; then
             git push

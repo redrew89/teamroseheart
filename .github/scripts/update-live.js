@@ -1,145 +1,92 @@
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
+const https = require('https');
 
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const ACTION = process.env.ACTION;
-const CHANNEL_ID = 'UCSTsZCHEEus5W4-18U7Haww'; // Your channel ID
-const CHANNEL_NAME = 'Team Roseheart';
-const MANUAL_VIDEO_ID = process.env.YOUTUBE_VIDEO_ID || '';
+const CHANNEL_ID = 'UCSTsZCHEEus5W4-18U7Haww';
 
-// NOTE: This script runs in GitHub Actions / Node.js, so the API key must be valid for server-side requests.
-// HTTP referrer restrictions are not compatible with server-side use, which causes the "Requests from referer <empty> are blocked" error.
+// No API key needed. No quota. Just works.
 
-async function fetchChannelDetails() {
+function fetchUrl(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(data));
+    }).on('error', reject);
+  });
+}
+
+async function getRecentVideoIds() {
+  const url = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
+  console.log('Fetching RSS feed...');
+  const xml = await fetchUrl(url);
+
+  // Pull out video IDs from <yt:videoId> tags
+  const matches = [...xml.matchAll(/<yt:videoId>([^<]+)<\/yt:videoId>/g)];
+  const ids = matches.map(m => m[1]);
+  console.log(`Found ${ids.length} recent videos in feed.`);
+  return ids;
+}
+
+async function isVideoLive(videoId) {
+  // oEmbed returns basic metadata with no API key required
+  const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
   try {
-    const response = await axios.get('https://www.googleapis.com/youtube/v3/channels', {
-      params: {
-        part: 'snippet,statistics',
-        id: CHANNEL_ID,
-        key: YOUTUBE_API_KEY,
-      },
-    });
-
-    if (response.data.items && response.data.items.length > 0) {
-      const channel = response.data.items[0];
-      console.log(`Channel verified: ${channel.snippet.title} (${channel.id})`);
-      return channel;
-    }
-
-    console.warn(`Channel ID ${CHANNEL_ID} was not found by the YouTube API.`);
-    return null;
-  } catch (error) {
-    console.error('Error verifying channel ID:', error.message);
-    if (error.response) {
-      console.error('Channel verification response:', JSON.stringify(error.response.data, null, 2));
-    }
-    return null;
+    const json = await fetchUrl(url);
+    const data = JSON.parse(json);
+    // If the title contains "live" or we just check via a second method below
+    // Primary: use the /live URL redirect trick — YouTube returns 200 for an active live stream
+    return await checkLiveRedirect(videoId);
+  } catch {
+    return false;
   }
 }
 
-async function searchFallbackByQuery(query) {
+async function checkLiveRedirect(videoId) {
+  // YouTube's /live page for a video redirects and returns metadata we can inspect
+  // Simpler: check if the video is currently live via the nocookie embed page
+  const url = `https://www.youtube.com/watch?v=${videoId}`;
   try {
-    console.log(`Attempting fallback search for live videos matching query: ${query}`);
-    const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
-      params: {
-        part: 'snippet',
-        q: query,
-        eventType: 'live',
-        type: 'video',
-        maxResults: 5,
-        key: YOUTUBE_API_KEY,
-      },
-    });
-
-    if (response.data.items && response.data.items.length > 0) {
-      console.log(`Fallback search returned ${response.data.items.length} live items.`);
-      return response.data.items[0].id.videoId;
-    }
-
-    console.log('Fallback search did not find any live videos.');
-    return null;
-  } catch (error) {
-    console.error('Error during fallback live search:', error.message);
-    if (error.response) {
-      console.error('Fallback search response:', JSON.stringify(error.response.data, null, 2));
-    }
-    return null;
+    const html = await fetchUrl(url);
+    // YouTube embeds "isLiveBroadcast" and liveBroadcastDetails in the page HTML
+    const isLive = html.includes('"isLiveContent":true') && html.includes('"isLiveBroadcast":true');
+    return isLive;
+  } catch {
+    return false;
   }
 }
 
 async function getLiveVideoId() {
-  if (MANUAL_VIDEO_ID) {
-    console.log(`Using manual video ID override from env: ${MANUAL_VIDEO_ID}`);
-    return MANUAL_VIDEO_ID;
+  const videoIds = await getRecentVideoIds();
+  if (!videoIds.length) {
+    console.log('No videos found in RSS feed.');
+    return null;
   }
 
-  await fetchChannelDetails();
-
-  try {
-    console.log(`Searching for live streams on channel ${CHANNEL_ID}...`);
-    const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
-      params: {
-        part: 'snippet',
-        channelId: CHANNEL_ID,
-        eventType: 'live',
-        type: 'video',
-        maxResults: 1,
-        key: YOUTUBE_API_KEY,
-      },
-    });
-
-    console.log(`YouTube API response: ${JSON.stringify(response.data, null, 2)}`);
-
-    if (response.data.items && response.data.items.length > 0) {
-      const videoId = response.data.items[0].id.videoId;
-      console.log(`Found live video: ${videoId}`);
+  // Check the 5 most recent videos for a live stream
+  for (const videoId of videoIds.slice(0, 5)) {
+    console.log(`Checking if ${videoId} is live...`);
+    const live = await checkLiveRedirect(videoId);
+    if (live) {
+      console.log(`✅ Found live stream: ${videoId}`);
       return videoId;
     }
-
-    console.log(`No live videos found for channel ${CHANNEL_ID}.`);
-    const fallbackVideoId = await searchFallbackByQuery(CHANNEL_NAME);
-    if (fallbackVideoId) {
-      console.log(`Fallback found a live video: ${fallbackVideoId}`);
-      return fallbackVideoId;
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Error fetching live video ID:', error.message);
-    if (error.response) {
-      console.error('Error response:', JSON.stringify(error.response.data, null, 2));
-      if (
-        error.response.status === 403 &&
-        error.response.data?.error?.details?.some(
-          (detail) => detail.reason === 'API_KEY_HTTP_REFERRER_BLOCKED'
-        )
-      ) {
-        console.error(
-          'This request is being made from a server environment with an API key restricted to HTTP referrers. ' +
-          'Use a server-side API key without referrer restrictions, or adjust the key restrictions in the Google Cloud Console.'
-        );
-      }
-    }
-    return null;
   }
+
+  console.log('No live stream found among recent videos.');
+  return null;
 }
 
 function updateStreamJson(videoId) {
   const filePath = path.join(__dirname, '../../live/stream.json');
   const content = JSON.stringify({ youtubeVideoId: videoId }, null, 2) + '\n';
   fs.writeFileSync(filePath, content, 'utf8');
-  console.log(`Updated live/stream.json to: ${videoId}`);
+  console.log(`Updated live/stream.json → "${videoId}"`);
 }
 
 async function main() {
   console.log(`Action: ${ACTION}`);
-  console.log(`API Key present: ${YOUTUBE_API_KEY ? 'Yes' : 'NO - THIS IS THE PROBLEM'}`);
-
-  if (!YOUTUBE_API_KEY) {
-    console.error('YOUTUBE_API_KEY not set in environment variables');
-    process.exit(1);
-  }
 
   if (ACTION === 'go_live') {
     const videoId = await getLiveVideoId();
@@ -155,6 +102,9 @@ async function main() {
   } else if (ACTION === 'check') {
     const videoId = await getLiveVideoId();
     console.log(videoId ? `✅ Live video ID: ${videoId}` : '❌ No live stream');
+  } else {
+    console.error(`Unknown action: ${ACTION}`);
+    process.exit(1);
   }
 }
 
