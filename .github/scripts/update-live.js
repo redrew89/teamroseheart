@@ -33,8 +33,9 @@ function updateConfig(videoId) {
   let content = fs.readFileSync(filePath, 'utf8');
 
   // Update youtubeVideoId in CONFIG
-  const videoIdRegex = /(youtubeVideoId:\s*')([^']*)(')/;
-  content = content.replace(videoIdRegex, `$1${videoId}$3`);
+  const videoIdRegex = /youtubeVideoId:\s*'[^']*'/;
+  const replacement = `youtubeVideoId: '${videoId}'`;
+  content = content.replace(videoIdRegex, replacement);
 
   fs.writeFileSync(filePath, content);
   console.log(`Updated youtubeVideoId to: ${videoId}`);
