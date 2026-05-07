@@ -6,6 +6,9 @@ const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const ACTION = process.env.ACTION;
 const CHANNEL_ID = 'UCSTsZCHEEus5W4-18U7Haww'; // Your channel ID
 
+// NOTE: This script runs in GitHub Actions / Node.js, so the API key must be valid for server-side requests.
+// HTTP referrer restrictions are not compatible with server-side use, which causes the "Requests from referer <empty> are blocked" error.
+
 async function getLiveVideoId() {
   try {
     console.log(`Searching for live streams on channel ${CHANNEL_ID}...`);
@@ -34,6 +37,17 @@ async function getLiveVideoId() {
     console.error('Error fetching live video ID:', error.message);
     if (error.response) {
       console.error('Error response:', JSON.stringify(error.response.data, null, 2));
+      if (
+        error.response.status === 403 &&
+        error.response.data?.error?.details?.some(
+          (detail) => detail.reason === 'API_KEY_HTTP_REFERRER_BLOCKED'
+        )
+      ) {
+        console.error(
+          'This request is being made from a server environment with an API key restricted to HTTP referrers. ' +
+          'Use a server-side API key without referrer restrictions, or adjust the key restrictions in the Google Cloud Console.'
+        );
+      }
     }
     return null;
   }
