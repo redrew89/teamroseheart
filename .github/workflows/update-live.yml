@@ -33,7 +33,7 @@ jobs:
         run: node .github/scripts/update-live.js
         env:
           ACTION: ${{ inputs.action || 'check' }}
-
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       - name: Commit changes
         run: |
           git config --local user.email "action@github.com"
