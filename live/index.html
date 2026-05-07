@@ -267,11 +267,14 @@
 
         function refreshStream() {
             const url = buildStreamUrl();
+            console.log(`Refreshing stream with URL: "${url}"`);
             if (url) {
                 streamFrame.src = url;
                 showOfflinePoster(false);
+                console.log('Stream frame updated, offline poster hidden');
             } else {
                 showOfflinePoster(true);
+                console.log('No stream URL, showing offline poster');
             }
         }
 
@@ -295,21 +298,25 @@
 
         async function loadStreamStatus() {
             try {
+                console.log(`Fetching stream status from: ${CONFIG.statusFile}`);
                 const response = await fetch(CONFIG.statusFile, { cache: 'no-store' });
                 if (!response.ok) {
-                    console.warn('Unable to load stream status:', response.status);
+                    console.error(`Failed to load stream status: HTTP ${response.status} ${response.statusText}`);
                     return '';
                 }
                 const data = await response.json();
-                return data.youtubeVideoId || '';
+                const videoId = data.youtubeVideoId || '';
+                console.log(`Stream status loaded. Video ID: "${videoId}"`);
+                return videoId;
             } catch (error) {
-                console.warn('Stream status fetch failed:', error);
+                console.error('Stream status fetch failed:', error);
                 return '';
             }
         }
 
         async function initLiveStatus() {
             CONFIG.youtubeVideoId = await loadStreamStatus();
+            console.log(`Initializing live status. Video ID set to: "${CONFIG.youtubeVideoId}"`);
             refreshStream();
         }
 

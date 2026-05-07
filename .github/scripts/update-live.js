@@ -8,6 +8,7 @@ const CHANNEL_ID = 'UCSTsZCHEEus5W4-18U7Haww'; // Your channel ID
 
 async function getLiveVideoId() {
   try {
+    console.log(`Searching for live streams on channel ${CHANNEL_ID}...`);
     const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
       params: {
         part: 'snippet',
@@ -19,13 +20,23 @@ async function getLiveVideoId() {
       },
     });
 
+    console.log(`YouTube API response: ${JSON.stringify(response.data, null, 2)}`);
+
     if (response.data.items && response.data.items.length > 0) {
-      return response.data.items[0].id.videoId;
+      const videoId = response.data.items[0].id.videoId;
+      console.log(`Found live video: ${videoId}`);
+      return videoId;
+    } else {
+      console.log('No live videos found');
+      return null;
     }
   } catch (error) {
     console.error('Error fetching live video ID:', error.message);
+    if (error.response) {
+      console.error('Error response:', JSON.stringify(error.response.data, null, 2));
+    }
+    return null;
   }
-  return null;
 }
 
 function updateStreamJson(videoId) {
@@ -36,8 +47,11 @@ function updateStreamJson(videoId) {
 }
 
 async function main() {
+  console.log(`Action: ${ACTION}`);
+  console.log(`API Key present: ${YOUTUBE_API_KEY ? 'Yes' : 'NO - THIS IS THE PROBLEM'}`);
+
   if (!YOUTUBE_API_KEY) {
-    console.error('YOUTUBE_API_KEY not set');
+    console.error('YOUTUBE_API_KEY not set in environment variables');
     process.exit(1);
   }
 
@@ -45,16 +59,16 @@ async function main() {
     const videoId = await getLiveVideoId();
     if (videoId) {
       updateStreamJson(videoId);
-      console.log('Stream set to live');
+      console.log('✅ Stream set to live');
     } else {
-      console.log('No live stream found');
+      console.log('❌ No live stream found');
     }
   } else if (ACTION === 'go_offline') {
     updateStreamJson('');
-    console.log('Stream set to offline');
+    console.log('✅ Stream set to offline');
   } else if (ACTION === 'check') {
     const videoId = await getLiveVideoId();
-    console.log(videoId ? `Live video ID: ${videoId}` : 'No live stream');
+    console.log(videoId ? `✅ Live video ID: ${videoId}` : '❌ No live stream');
   }
 }
 
