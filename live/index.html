@@ -245,8 +245,8 @@
         const CONFIG = {
             youtubeChannelId: 'UCSTsZCHEEus5W4-18U7Haww', // Team Roseheart's YouTube channel ID
             youtubeVideoId: '',           // optional: specific video ID to embed
-            youtubeApiKey: 'AIzaSyATPU3eVHJPKQdWZ2OA2DV8B2KLDux8Gd8',            // optional: YouTube Data API key for live status checks
-            autoLiveCheck: true,          // enable auto offline poster based on channel live status
+            youtubeApiKey: '',            // REMOVED: API key not secure in public repo
+            autoLiveCheck: false,         // disabled: no secure way to check live status client-side
             offlineImageUrl: './img/Lielle Wallpaper 4k.jpg',
             offlineImageAlt: 'redrew89 is offline',
             offlineText: 'We’re not live right now. Check back soon.',
@@ -263,12 +263,18 @@
             if (CONFIG.youtubeVideoId) {
                 return `https://www.youtube.com/embed/${CONFIG.youtubeVideoId}?autoplay=1&modestbranding=1&rel=0`;
             }
-            return `https://www.youtube.com/embed/live_stream?channel=${CONFIG.youtubeChannelId}&autoplay=1&mute=0&modestbranding=1&rel=0`;
+            // No live video ID set - show offline poster
+            return '';
         }
 
         function refreshStream() { 
-            streamFrame.src = buildStreamUrl(); 
-            showOfflinePoster(false);
+            const url = buildStreamUrl();
+            if (url) {
+                streamFrame.src = url; 
+                showOfflinePoster(false);
+            } else {
+                showOfflinePoster(true);
+            }
         }
 
         function showOfflinePoster(show) {
@@ -338,11 +344,7 @@
         }
 
         function initLiveStatus() {
-            refreshStream();
-            if (CONFIG.youtubeApiKey && CONFIG.autoLiveCheck) {
-                refreshLiveStatus();
-                setInterval(refreshLiveStatus, 60 * 1000);
-            }
+            refreshStream(); // Will show offline poster since no video ID
         }
 
         // Initialize
