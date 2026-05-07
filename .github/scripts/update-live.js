@@ -28,17 +28,11 @@ async function getLiveVideoId() {
   return null;
 }
 
-function updateConfig(videoId) {
-  const filePath = path.join(__dirname, '../../live/index.html');
-  let content = fs.readFileSync(filePath, 'utf8');
-
-  // Update youtubeVideoId in CONFIG
-  const videoIdRegex = /youtubeVideoId:\s*'[^']*'/;
-  const replacement = `youtubeVideoId: '${videoId}'`;
-  content = content.replace(videoIdRegex, replacement);
-
-  fs.writeFileSync(filePath, content);
-  console.log(`Updated youtubeVideoId to: ${videoId}`);
+function updateStreamJson(videoId) {
+  const filePath = path.join(__dirname, '../../live/stream.json');
+  const content = JSON.stringify({ youtubeVideoId: videoId }, null, 2) + '\n';
+  fs.writeFileSync(filePath, content, 'utf8');
+  console.log(`Updated live/stream.json to: ${videoId}`);
 }
 
 async function main() {
@@ -50,13 +44,13 @@ async function main() {
   if (ACTION === 'go_live') {
     const videoId = await getLiveVideoId();
     if (videoId) {
-      updateConfig(videoId);
+      updateStreamJson(videoId);
       console.log('Stream set to live');
     } else {
       console.log('No live stream found');
     }
   } else if (ACTION === 'go_offline') {
-    updateConfig('');
+    updateStreamJson('');
     console.log('Stream set to offline');
   } else if (ACTION === 'check') {
     const videoId = await getLiveVideoId();

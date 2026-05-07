@@ -215,12 +215,12 @@
     <div class="stream-panel" id="streamPanel">
         <iframe id="streamFrame" 
                 class="stream-frame"
-                src="https://www.youtube.com/embed/live_stream?channel=UCSTsZCHEEus5W4-18U7Haww&autoplay=0&mute=0&modestbranding=1&rel=0"
+                src=""
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen>
         </iframe>
 
-        <div class="offline-poster" id="offlinePoster">
+        <div class="offline-poster visible" id="offlinePoster">
             <img id="offlineImage" src="" alt="Stream offline image">
             <div class="offline-copy">
                 <strong>Stream is offline</strong>
@@ -245,9 +245,8 @@
         const CONFIG = {
             youtubeChannelId: 'UCSTsZCHEEus5W4-18U7Haww', // Team Roseheart's YouTube channel ID
             youtubeVideoId: '',           // optional: specific video ID to embed
-            youtubeApiKey: '',            // REMOVED: API key not secure in public repo
-            autoLiveCheck: false,         // disabled: no secure way to check live status client-side
-            offlineImageUrl: "./img/Lielle Wallpaper 4k.png",
+            statusFile: './stream.json',  // local live status file
+            offlineImageUrl: './img/Lielle Wallpaper 4k.png',
             offlineImageAlt: 'redrew89 is offline',
             offlineText: 'We’re not live right now. Check back soon.',
         };
@@ -263,14 +262,13 @@
             if (CONFIG.youtubeVideoId) {
                 return `https://www.youtube.com/embed/${CONFIG.youtubeVideoId}?autoplay=1&modestbranding=1&rel=0`;
             }
-            // No live video ID set - show offline poster
             return '';
         }
 
-        function refreshStream() { 
+        function refreshStream() {
             const url = buildStreamUrl();
             if (url) {
-                streamFrame.src = url; 
+                streamFrame.src = url;
                 showOfflinePoster(false);
             } else {
                 showOfflinePoster(true);
@@ -295,56 +293,24 @@
             }
         }
 
-        async function fetchLiveVideoId() {
-            if (!CONFIG.youtubeApiKey || !CONFIG.autoLiveCheck) {
-                return null;
-            }
-
-            const endpoint = 'https://www.googleapis.com/youtube/v3/search';
-            const params = new URLSearchParams({
-                part: 'snippet',
-                channelId: CONFIG.youtubeChannelId,
-                eventType: 'live',
-                type: 'video',
-                maxResults: '1',
-                key: CONFIG.youtubeApiKey,
-            });
-
+        async function loadStreamStatus() {
             try {
-                const response = await fetch(`${endpoint}?${params}`);
+                const response = await fetch(CONFIG.statusFile, { cache: 'no-store' });
                 if (!response.ok) {
-                    console.warn('YouTube live status check failed:', response.status, response.statusText);
-                    return null;
+                    console.warn('Unable to load stream status:', response.status);
+                    return '';
                 }
-
                 const data = await response.json();
-                if (data.items && data.items.length > 0 && data.items[0].id && data.items[0].id.videoId) {
-                    return data.items[0].id.videoId;
-                }
+                return data.youtubeVideoId || '';
             } catch (error) {
-                console.warn('YouTube live status request error:', error);
-            }
-
-            return null;
-        }
-
-        async function refreshLiveStatus() {
-            if (!CONFIG.youtubeApiKey || !CONFIG.autoLiveCheck) {
-                return;
-            }
-
-            const liveVideoId = await fetchLiveVideoId();
-            if (liveVideoId) {
-                CONFIG.youtubeVideoId = liveVideoId;
-                refreshStream();
-                showOfflinePoster(false);
-            } else {
-                showOfflinePoster(true);
+                console.warn('Stream status fetch failed:', error);
+                return '';
             }
         }
 
-        function initLiveStatus() {
-            refreshStream(); // Will show offline poster since no video ID
+        async function initLiveStatus() {
+            CONFIG.youtubeVideoId = await loadStreamStatus();
+            refreshStream();
         }
 
         // Initialize
